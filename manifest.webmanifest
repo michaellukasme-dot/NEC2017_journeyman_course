@@ -1,0 +1,14 @@
+{
+  "name": "Amp Academy — NEC 2017 Journeyman",
+  "short_name": "Journeyman 2017",
+  "description": "NEC 2017 Journeyman Electrician exam prep — Amp Academy. Installable, offline.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0D1B2A",
+  "theme_color": "#0D1B2A",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- AA Journeyman NEC2017 v1.0 :: full SAS surface added 2026-06-18 (PWA manifest + service worker aa-jrny-2017-v1 + install; offline incl. fonts). Content unchanged. -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -6,6 +7,9 @@
 <title>NEC 2017 Journeyman Electrician — Amp Academy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Libre+Baskerville:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0D1B2A">
+<link rel="apple-touch-icon" href="icons/icon.svg">
 <style>
 /* ───── RESET ───────────────────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0}
@@ -3260,6 +3264,11 @@ document.querySelectorAll('.mg').forEach(el => {
 
 go(LS[0]);
 toggleMod('00');   // open orientation by default
+</script>
+<script>
+/* Amp Academy PWA — install + offline (SAS §2.3, added 2026-06-18) */
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
+(function(){var d=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();d=e;var b=document.getElementById('aa-install');if(!b){b=document.createElement('button');b.id='aa-install';b.textContent='Install course';b.style.cssText='position:fixed;right:14px;bottom:14px;z-index:300;background:#F4A300;color:#0D1B2A;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:inherit';document.body.appendChild(b);}b.style.display='block';b.onclick=function(){b.style.display='none';if(d){d.prompt();d=null;}};});})();
 </script>
 </body>
 </html>
