@@ -1,7 +1,7 @@
 /* Amp Academy — NEC 2017 Journeyman · service worker (SAS §2.3)
    Offline-first runtime cache: caches the page + Google Fonts on first visit so
    the course works fully offline after. Bump CACHE on any shipped change. */
-const CACHE = 'aa-jrny-2017-v1';
+const CACHE = 'aa-jrny-2017-v2';   /* v2: in-course Load Calculator embed (Mod 3 + Mod 12) 2026-06-18 */
 
 self.addEventListener('install', e => { self.skipWaiting(); });
 
