@@ -3930,5 +3930,55 @@ toggleMod('00');   // open orientation by default
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
 (function(){var d=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();d=e;var b=document.getElementById('aa-install');if(!b){b=document.createElement('button');b.id='aa-install';b.textContent='Install course';b.style.cssText='position:fixed;right:14px;bottom:14px;z-index:300;background:#F4A300;color:#0D1B2A;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:inherit';document.body.appendChild(b);}b.style.display='block';b.onclick=function(){b.style.display='none';if(d){d.prompt();d=null;}};});})();
 </script>
+
+<style>
+.jt-tab{position:fixed;left:16px;bottom:16px;z-index:200;background:#0D7C66;color:#fff;border:0;border-radius:24px;padding:11px 18px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.jt-panel{position:fixed;left:16px;bottom:16px;z-index:201;width:340px;max-width:calc(100vw - 32px);background:#0d1b2a;color:#e8eef5;border:1px solid #1b3a57;border-radius:14px;display:none;flex-direction:column;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+.jt-panel.open{display:flex}
+.jt-hd{background:#11263b;padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.jt-hd .t{font-weight:700;font-size:13px}.jt-hd .s{font-size:10px;color:#9db4cc;font-family:ui-monospace,monospace}
+.jt-x{background:none;border:0;color:#9db4cc;font-size:18px;cursor:pointer;line-height:1}
+.jt-msgs{padding:12px 14px;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.jt-m{font-size:13px;line-height:1.45;padding:8px 10px;border-radius:8px}
+.jt-ai{background:#11263b}.jt-u{background:#1d9e75;color:#04211a;align-self:flex-end}
+.jt-row{display:flex;gap:6px;padding:10px 14px;border-top:1px solid #1b3a57}
+.jt-row input{flex:1;background:#0a1622;border:1px solid #2a4a66;color:#fff;border-radius:8px;padding:8px;font-size:13px;font-family:inherit}
+.jt-row button{background:#1d9e75;color:#04211a;border:0;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer}
+.jt-note{font-size:10px;color:#7a93ad;text-align:center;padding:0 0 8px}
+</style>
+<button class="jt-tab" id="jt-tab" onclick="jtToggle()">Ask Tutor</button>
+<div class="jt-panel" id="jt-panel">
+  <div class="jt-hd"><div><div class="t">Amp Academy Tutor</div><div class="s" id="jt-status">offline</div></div><button class="jt-x" onclick="jtToggle()" aria-label="Close">&minus;</button></div>
+  <div class="jt-msgs" id="jt-msgs"><div class="jt-m jt-ai">Hi — ask me about this lesson or the NEC. I cite article numbers and defer to your printed NFPA 70 for exact values. Live when connected; offline otherwise.</div></div>
+  <div class="jt-row"><input id="jt-in" placeholder="Ask about this lesson…" autocomplete="off" onkeydown="if(event.key==='Enter')jtSend()"><button onclick="jtSend()">Ask</button></div>
+  <div class="jt-note">Study aid — not a substitute for the NEC book.</div>
+</div>
+<script>
+window.AA_TUTOR = window.AA_TUTOR || { endpoint:"https://amp-academy-tutor.ampacademy.workers.dev/tutor", edition:"NEC 2017" };
+(function(){
+  var CFG=window.AA_TUTOR, EP=CFG.endpoint||"", ED=CFG.edition||"NEC 2017";
+  var configured=!!(EP && !/<acct>|example\.com|YOUR_/i.test(EP));
+  var OFFLINE="The live tutor is offline right now — I won't guess NEC values. Check your NFPA 70, or connect online for the live tutor.";
+  var hist=[];
+  function status(s){var e=document.getElementById('jt-status');if(e)e.textContent=s;}
+  function ctx(){var ps=document.querySelectorAll('.panel'),p=null;for(var k=0;k<ps.length;k++){var st=ps[k].style.display;if(st==='block'){p=ps[k];break;}}if(!p)p=ps[0];
+    var t=p?(p.querySelector('h2')?p.querySelector('h2').textContent.trim():'') : (document.title||'');
+    var c=p?p.textContent.replace(/\s+/g,' ').trim().slice(0,3500):'';return {t:t,c:c};}
+  window.jtToggle=function(){var p=document.getElementById('jt-panel'),b=document.getElementById('jt-tab');var o=p.classList.toggle('open');b.style.display=o?'none':'block';if(o)status(configured&&navigator.onLine?'online':'offline');};
+  window.jtSend=function(){var i=document.getElementById('jt-in'),m=document.getElementById('jt-msgs');var t=i.value.trim();if(!t)return;i.value='';
+    var u=document.createElement('div');u.className='jt-m jt-u';u.textContent=t;m.appendChild(u);m.scrollTop=m.scrollHeight;
+    jtAsk(t).then(function(r){var a=document.createElement('div');a.className='jt-m jt-ai';a.textContent=r;m.appendChild(a);m.scrollTop=m.scrollHeight;});};
+  function jtAsk(text){
+    if(!configured||!navigator.onLine){status('offline');return Promise.resolve(OFFLINE);}
+    status('connecting…');var c=ctx();var ctrl=new AbortController();var to=setTimeout(function(){ctrl.abort();},20000);
+    return fetch(EP,{method:'POST',headers:{'content-type':'application/json'},signal:ctrl.signal,
+      body:JSON.stringify({question:text,lessonTitle:c.t,lessonContext:c.c,edition:ED,history:hist.slice(-6)})})
+      .then(function(r){clearTimeout(to);return r.json().catch(function(){return{};}).then(function(d){
+        if(r.ok&&d&&d.ok&&d.answer){hist.push({role:'user',content:text});hist.push({role:'assistant',content:d.answer});status('online');return d.answer;}
+        status('online');return (d&&d.error)?d.error:OFFLINE;});})
+      .catch(function(){clearTimeout(to);status('offline');return OFFLINE;});
+  }
+})();
+</script>
 </body>
 </html>
